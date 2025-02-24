@@ -8,13 +8,16 @@ const registerUser = asyncHandler( async (req, res) => {
 
     const {fullName, email, username, password} = req.body;
 
-    const hasEmptyValue = [fullName, email, username, password].some((item) => item == "" );
+    //console.log(req);
+
+    const hasEmptyValue = [fullName, email, username, password].some((item) => item === "" || item === null || item === undefined );
+    console.log(hasEmptyValue);
 
     if (hasEmptyValue){
         throw new ApiError(400, "Empty field received, Please provide a valid value");
     }
 
-    const isUserAlreadyExist = User.findOne(
+    const isUserAlreadyExist = await User.findOne(
         {
             $or: [{username}, {email}]
         }
@@ -24,8 +27,8 @@ const registerUser = asyncHandler( async (req, res) => {
         throw new ApiError(409, "User already exists.");
     }
 
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
     if (!avatarLocalPath){
         throw new ApiError(400, "Avatar file is required");
@@ -47,8 +50,8 @@ const registerUser = asyncHandler( async (req, res) => {
             fullName,
             username,
             email,
-            avatar: avatar.url,
-            coverImage: coverImage.url || "",
+            avatar: avatar?.url,
+            coverImage: coverImage?.url || "",
             password,
         }
     )
